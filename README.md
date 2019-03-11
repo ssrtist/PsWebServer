@@ -8,23 +8,24 @@ Example:
 ```
 <html>
   <body>
-	<table border=1>
-		<tr>
-			<td>Server Hostname: </td><td><%$env:Computername%></td>
-		</tr>
-		<tr>
-			<td>IP Address: </td><td><%([system.net.dns]::GetHostAddresses($enc:computername).ipaddresstostring)[0]%></td>
-		</tr>
-		<tr>
-			<td>C:\ Content: </d>
-			<td>
-				<% 
-					"Current Folder: $(pwd) <br><br>"
-					dir c:\ | % {"$_ <br>"}
-				%>
-			</td>
-		</tr>
-	</table>
+    <table border=1>
+      <tr>
+        <td>Server Hostname: </td><td><%$env:Computername%></td>
+      </tr>
+      <tr>
+      	<td>IP Address: </td><td><%([system.net.dns]::GetHostAddresses($enc:computername).ipaddresstostring)[0]%></td>
+      </tr>
+      <tr>
+        <td>C:\ Content: </d></td>
+	<td>
+          <% 
+	    "Current Folder: $(pwd) <br><br>"
+            dir c:\ | % {"$_ <br>"}
+          %>
+	</td>
+      </tr>
+    </table>
   </body>
 </html>
 ```
+Results:
