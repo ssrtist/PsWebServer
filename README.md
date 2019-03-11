@@ -28,4 +28,5 @@ Example:
   </body>
 </html>
 ```
-Results:
+![Results:](PsWebServer/example3results.png)
+      
