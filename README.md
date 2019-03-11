@@ -28,5 +28,7 @@ Example:
   </body>
 </html>
 ```
-![Results:](example3results.gif?raw=true)
+Results:
+
+![Results](https://raw.githubusercontent.com/ssrtist/PsWebServer/master/example2results.jpg?_sm_au_=isVtZNqs6MZMWnG5)
      
