@@ -28,5 +28,5 @@ Example:
   </body>
 </html>
 ```
-![Results:](example3results.png)
-      
+![Results:](example3results.gif?raw=true)
+     
