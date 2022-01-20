@@ -1,0 +1,61 @@
+<html><body>
+  <h2> Welcome to the Windows Server Build Registration Portal</h2>
+<%
+	#$_CommandRegisterPath = "..\SCCM\Add-CMComputer.ps1"
+	#$_Command = "Register"
+	$myPath = $RECEIVED.replace("$($RECEIVED.split("/")[0])/","")
+	$tempQuery = [URI]::UnescapeDataString(($REQUEST.Url.Query -replace "\+"," "))
+
+    if($REQUEST.HasEntityBody) {
+      $Reader = New-Object System.IO.StreamReader($REQUEST.InputStream)
+	  $tempQuery = [URI]::UnescapeDataString($Reader.ReadToEnd())
+    }
+
+	# below section enables the use of & inside parameter values
+	$newQuery = ""
+	$thisChar = ""
+	$eq = $false; 
+	for ($i = $tempQuery.length -1 ; $i -gt -1; $i--) {
+		$thisChar = $tempQuery[$i];
+		if ($tempQuery[$i] -eq "=") {
+			$eq = $true
+		}; 
+		if ($tempQuery[$i] -eq "&") {
+			if (!$eq) {
+				$thisChar = '%';
+			}; 
+			$eq = $false;
+		}
+		$newQuery+=$thisChar;
+	}
+	$queryString = -join ($newQuery[$newQuery.length..0]);
+	$psParams = ""
+	$queryString -replace "\?", "" -split "&" | % { 
+		$psParam = $_ -split "="; 
+		if ($psParam[0] -eq "command") {
+			$_Command=$psParam[1]
+		} elseif ($psParam[0] -eq "username") {
+			$_Username=[URI]::UnescapeDataString($psParam[1])
+		} elseif ($psParam[0] -eq "password") {
+			$_Password=[URI]::UnescapeDataString($psParam[1])
+		} elseif ($psParam[0] -eq "session") {
+			$_Session=[URI]::UnescapeDataString($psParam[1])
+		} else { 
+			$psParams += "-$($psParam[0]) ""$($psParam[1])"" " 
+		}
+	}
+	$psParams = $psParams.replace("_"," ").replace("%","&")
+	if (!$_Username) {
+		"<h3> Please Enter your NT logon: </h3><form method=""POST"" action=""login.psp""><table><tr><td><b>Username:</b></td><td><input type=""text"" maxlength=255 size=80 name=""username"" size=""50"" style=""width: 150px;""><br></td></tr><tr><td><b>Password:</b></td><td><input type=""password"" maxlength=255 size=80 name=""password"" size=""50"" style=""width: 150px;""><br></td></tr></table><br><input type=""submit"" value=""Login""></form>"
+	} else {
+		#Authentication Subroutine
+		#"username: $_Username password: ""$_Password"" command: $_Command"
+		$res = dsquery user -samid $_Username -u $_Username -p $_Password
+		if ($res) {"Authenticated Successful<br>"} else {"Authenticated Failed<br>"}
+		#Authorization Subroutine
+		$res = dsquery user -samid $_Username | dsget user -memberof | select-string "ServerPerm-WindowsServerBuilders"
+		if ($res) {" Authorization Successful<br>"} else {" Authorization Failed<br>"}
+		#$psParams
+	}
+%>
+</body></html>
