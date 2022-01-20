@@ -1,0 +1,97 @@
+<html>
+<head><title>BuildMaster- Windows Server Build Registration</title></head>
+
+<script type="text/javascript">
+
+function validateForm() {
+	var elements = document.getElementById("input").elements;
+	for (var i = 0, element; element = elements[i++];) {
+		if (element.value === "") {
+			alert(element.name + ": Please input a Value");
+			element.focus();
+			return;
+		}
+	}
+	document.input.submit();
+} 
+function validateForm2() {
+    var element = document.forms["check"]["Name"];
+    if (element.value == "") {
+        alert(element.name + ": Please input a Value");
+        element.focus();
+        return;
+    }
+	document.check.submit();
+} 
+function getQueryVariable(variable)
+{
+       var query = window.location.search.substring(1);
+       var vars = query.split("&");
+       for (var i=0;i<vars.length;i++) {
+               var pair = vars[i].split("=");
+               if(pair[0] == variable){return pair[1];}
+       }
+       return(false);
+}
+
+</script>
+
+<body>
+	<a href="/index.html">Home</a> |
+	<h2> Welcome to the Windows Server Build Registration Portal
+	</h2>
+	<h3> Please fill out the form and add a new host config </h3>
+	<form id="input" name="input" action="register.psp" method="get">
+		<table>
+				<tr><td>Hostname:</td><td><input type="hidden" name="Name" value="mockname"><input type="text" name="Hostname" /></td></tr>
+				<tr><td>OS:</td>
+					<td><select name="os">
+							<option value="" selected="selected">Undefined</option>
+							<option value="Windows Server 2019 Standard">Windows Server 2019 Standard</option>
+							<option value="Windows Server 2016 Standard">Windows Server 2016 Standard</option>
+							<option value="Windows Server 2012 R2 Standard">Windows Server 2012 R2 Standard</option>
+							<option value="Windows Server 2008 R2 Standard SP1">Windows Server 2008 R2 Standard SP1</option>
+							<option value="Windows Server 2008 R2 Enterprise SP1">Windows Server 2008 R2 Enterprise SP1</option>
+						</select>
+					</td></tr>
+				<tr><td>Domain:</td>
+					<td><select name="domain">
+							<option value="" selected="selected">Undefined</option>
+							<option value="pte-am.ameritrade.com">pte-am.ameritrade.com</option>
+							<option value="iteclientsys.local">iteclientsys.local</option>
+							<option value="prod-am.ameritrade.com">prod-am.ameritrade.com</option>
+							<option value="clientsys.local">clientsys.local</option>
+						</select>
+					</td></tr>
+				<tr><td>MAC Address:</td><td><input type="text" name="MAC" /> (Format: aa:bb:cc:dd:ee:ff)</td></tr>
+				<tr><td>UUID:</td><td><input type="text" name="UUID" /> (Format: 11112222-3333-4444-5555-666677778888)</td></tr>
+				<tr><td>Action Type:</td>
+					<td><select name="ActionType">
+							<option value="" selected="selected">Undefined</option>
+							<option value="Virtual">Virtual</option>
+							<option value="Physical">Physical</option>
+						</select>
+					</td></tr>
+				<tr><td>Owner:</td><td><input type="text" name="Owner" /></td></tr>
+				<tr><td>Submitter:</td><td><input type="text" name="Submitter" /></td></tr>
+		</table>
+		<input type="button" onclick="validateForm()" value="Register">
+    </form>
+
+
+	<h3> Or use the below form to check registration status</h3>
+	<form id="check" name="check" action="register.psp" method="get">
+		<table>
+				<tr><td>Hostname:</td><td><input type="hidden" name="Command" value="status"><input type="text" name="Name" /></td></tr>
+				<tr><td>CollectionName:</td>
+					<td><select name="CollectionName">
+							<option value="Standard Builds 2012">Standard Builds 2012</option>
+							<option value="Standard Builds 2016" selected="selected">Standard Builds 2016</option>
+							<option value="Standard Builds 2019">Standard Builds 2019</option>
+						</select>
+					</td></tr>
+		</table>
+		<input type="button" onclick="validateForm2()" value="Check">
+    </form>
+</body>
+</html>
