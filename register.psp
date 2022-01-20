@@ -1,0 +1,60 @@
+<%
+	$_CommandRegisterPath = "..\SCCM\Add-CMComputer.ps1"
+	$_Command = "Register"
+	$myPath = $RECEIVED.replace("$($RECEIVED.split("/")[0])/","")
+	$tempQuery = [URI]::UnescapeDataString(($REQUEST.Url.Query -replace "\+"," "))
+
+	# below section enables the use of & inside parameter values
+	$newQuery = "";
+	$thisChar = "";
+	$eq = $false; 
+	for ($i = $tempQuery.length -1 ; $i -gt -1; $i--) {
+		$thisChar = $tempQuery[$i];
+		if ($tempQuery[$i] -eq "=") {
+			$eq = $true
+		}; 
+		if ($tempQuery[$i] -eq "&") {
+			if (!$eq) {
+				$thisChar = '%';
+			}; 
+			$eq = $false;
+		}
+		$newQuery+=$thisChar;
+	}
+	$queryString = -join ($newQuery[$newQuery.length..0]);
+
+	$psParams = ""
+	$queryString -replace "\?", "" -split "&" | % { $psParam = $_ -split "="; if ($psParam[0] -ne "command") {$psParams += "-$($psParam[0]) ""$($psParam[1])"" " } else {$_Command=$psParam[1]}}
+	$psParams = $psParams.replace("_"," ").replace("%","&")
+
+    $localRESULT = $NULL
+
+	if ($_Command -eq "Register") {
+		$myCommand = "$_CommandRegisterPath $psParams"
+		if (Test-Path $_CommandRegisterPath) {
+			try {$localRESULT = invoke-expression $myCommand} catch {}
+		} else {
+			$myMessage = "<p>MESSAGE: Registration Command Code Missing"
+		}
+	}
+	if ($_Command -eq "Status") {
+		$myCommand = "Get-CMDevice $psParams"
+		$_Result = get-module | where {$_.Name -eq "ConfigurationManager"}; if (!$_Result) {
+			if ('C:\Program Files (x86)\Microsoft Configuration Manager\AdminConsole\bin\ConfigurationManager.psd1') {Import-Module 'C:\Program Files (x86)\Microsoft Configuration Manager\AdminConsole\bin\ConfigurationManager.psd1' -ErrorAction SilentlyContinue}
+			if ('C:\Program Files\Microsoft Configuration Manager\AdminConsole\bin\ConfigurationManager.psd1') {Import-Module 'C:\Program Files\Microsoft Configuration Manager\AdminConsole\bin\ConfigurationManager.psd1' -ErrorAction SilentlyContinue}
+			if ('D:\Program Files (x86)\Microsoft Configuration Manager\AdminConsole\bin\ConfigurationManager.psd1') {Import-Module 'D:\Program Files (x86)\Microsoft Configuration Manager\AdminConsole\bin\ConfigurationManager.psd1' -ErrorAction SilentlyContinue}
+			if ('D:\Program Files\Microsoft Configuration Manager\AdminConsole\bin\ConfigurationManager.psd1') {Import-Module 'D:\Program Files\Microsoft Configuration Manager\AdminConsole\bin\ConfigurationManager.psd1' -ErrorAction SilentlyContinue}
+		}
+		$_SiteServer = "prdtxwvsccmpr11.prod-am.ameritrade.com"
+		New-Psdrive -Name "TDA" -PSProvider "AdminUI.PS.Provider\CMSite" -Root $_SiteServer -Description "Primary Site" -ErrorAction SilentlyContinue | Out-Null
+		$CurrentDirectory = $PWD
+		CD TDA:
+		try {$localRESULT = invoke-expression $myCommand} catch {}
+		CD $CurrentDirectory
+	}
+
+	$HTMLRESPONSE = get-content .\results.html
+	$HTMLRESPONSE = $HTMLRESPONSE -replace "!ACTION", $_Command.ToUpper()
+	if ($localRESULT) {$HTMLRESPONSE = $HTMLRESPONSE -replace "!RESULT", "SUCCESS: $myCommand <br><br>Results: $localRESULT"} else {$HTMLRESPONSE = $HTMLRESPONSE -replace "!RESULT", "FAILURE: $myCommand $myMessage"}
+	$HTMLRESPONSE
+%>
