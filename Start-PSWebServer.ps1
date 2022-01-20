@@ -54,24 +54,6 @@ try
     # parse request
     $RECEIVED = '{0} {1}' -f $REQUEST.httpMethod, $REQUEST.Url.LocalPath
 	$localPath = $RECEIVED.replace("$($RECEIVED.split("/")[0])/","")
-
-    # check for known commands
-    switch ($RECEIVED)
-    {
-      "GET /"
-      {	# GET default document
-		if (Test-Path ".\index.htm") {$localPath = "index.htm"}
-		if (Test-Path ".\index.html") {$localPath = "index.html"}
-		if (Test-Path ".\index.psp") {$localPath = "index.psp"}
-		break
-      }
-
-      default
-	  {	
-		break
-      }
-
-    }
 	$localExt = ($localPath -split "\.")[1]
     
     # Return to default working directory
@@ -161,13 +143,32 @@ try
 	    }
     }
 
+    # check for known commands
+    switch ($RECEIVED)
+    {
+      "GET /"
+      {	# GET default document
+		if (Test-Path ".\index.htm") {$HTMLRESPONSE = Get-Content ".\index.htm"}
+		if (Test-Path ".\index.html") {$HTMLRESPONSE = Get-Content ".\index.html"}
+		if (Test-Path ".\index.psp") {$HTMLRESPONSE = Get-Content ".\index.psp"}
+		break
+      }
+
+      default
+	  {	
+		break
+      }
+
+    }
+
     # only send response if not already done
     if (!$RESPONSEWRITTEN)
     {
     	# return HTML answer to caller
     	$BUFFER = [Text.Encoding]::UTF8.GetBytes($HTMLRESPONSE)
-    	$RESPONSE.ContentLength64 = $BUFFER.Length
-    	$RESPONSE.OutputStream.Write($BUFFER, 0, $BUFFER.Length)
+        $BufferLength = [System.Text.Encoding]::UTF8.GetByteCount($HTMLRESPONSE)
+    	$RESPONSE.ContentLength64 = $BufferLength
+    	$RESPONSE.OutputStream.Write($BUFFER, 0, $BufferLength)
 	}
 
     # and finish answer to client
